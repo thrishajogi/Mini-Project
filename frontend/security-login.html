@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Security Verification — ZeroBank</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family: Arial, Helvetica, sans-serif;
+      background:#f5f5f5;
+      color:#222;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:60px 12px;
+    }
+
+    .card{
+      width:420px;
+      background:#fff;
+      border-radius:8px;
+      padding:28px;
+      box-shadow:0 6px 18px rgba(0,0,0,.06);
+    }
+
+    h1{
+      font-size:28px;
+      text-align:center;
+      margin-bottom:6px;
+    }
+
+    .sub{
+      text-align:center;
+      color:#666;
+      margin-bottom:18px;
+      font-size:14px;
+    }
+
+    label{
+      display:block;
+      margin:12px 0 6px;
+      font-weight:700;
+      font-size:14px;
+    }
+
+    select, input[type=text]{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid #e0e0e0;
+      border-radius:6px;
+      font-size:14px;
+      outline:none;
+    }
+
+    .two {
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+    }
+    .two .left{flex:1}
+    .two .right{flex:1}
+
+    .btn{
+      display:inline-block;
+      width:100%;
+      padding:12px;
+      margin-top:16px;
+      background:#0a67d1;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      font-size:16px;
+      cursor:pointer;
+    }
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+
+    .alert{
+      margin-top:12px;
+      padding:10px;
+      border-radius:6px;
+      display:none;
+      font-size:14px;
+    }
+    .alert.error{background:#fdecea;color:#7b1d1d}
+    .alert.ok{background:#eaf9ef;color:#14662f}
+
+    .hint{
+      font-size:13px;color:#666;margin-top:14px;text-align:center;
+    }
+
+    @media (max-width:460px){
+      .card{width:100%}
+      .two{flex-direction:column}
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Security Verification</h1>
+    <p class="sub">Verifying for: <span id="emailDisplay">no pending login — sign in first</span></p>
+
+    <div id="errorBox" class="alert error"></div>
+    <div id="okBox" class="alert ok"></div>
+
+    <label for="question">Security Question</label>
+    <select id="question" aria-label="Security question">
+      <option value="">(select a question)</option>
+      <option>What was your first pet's name?</option>
+      <option>What is your mother's maiden name?</option>
+      <option>What is your favorite color?</option>
+      <option>What city were you born in?</option>
+      <option>What was the name of your elementary school?</option>
+    </select>
+
+    <label for="answer">Your Answer</label>
+    <input id="answer" type="text" placeholder="Answer (optional if using authenticator)">
+
+    <label style="margin-top:14px">6-digit Authenticator Code</label>
+    <input id="totp" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Enter authenticator code">
+
+    <button id="verifyBtn" class="btn">Verify</button>
+
+    <p class="hint">You can answer the security question OR enter the authenticator code — or both for extra security.</p>
+  </div>
+
+  <script>
+    // backend base url - change only if your server listens on a different host/port
+    const API_BASE = 'http://localhost:5000';
+
+    const $ = id => document.getElementById(id);
+    const pendingEmail = (sessionStorage.getItem('pendingEmail') || '').trim();
+
+    function showError(msg){
+      $('errorBox').textContent = msg;
+      $('errorBox').style.display = 'block';
+      $('okBox').style.display = 'none';
+    }
+    function showOk(msg){
+      $('okBox').textContent = msg;
+      $('okBox').style.display = 'block';
+      $('errorBox').style.display = 'none';
+    }
+    function hideAlerts(){
+      $('errorBox').style.display = 'none';
+      $('okBox').style.display = 'none';
+    }
+
+    // populate displayed email
+    if (pendingEmail) {
+      $('emailDisplay').textContent = pendingEmail;
+    } else {
+      $('emailDisplay').textContent = 'no pending login — sign in first';
+    }
+
+    async function verifySecurityAnswer(email, question, answer) {
+      try {
+        const res = await fetch(`${API_BASE}/verify-security-answer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, question, answer })
+        });
+        const j = await res.json().catch(()=>null);
+        return j && j.valid === true;
+      } catch (e) {
+        console.error('verify-security-answer error', e);
+        throw new Error('Network error while verifying security answer.');
+      }
+    }
+
+    async function verifyTOTP(email, code) {
+      try {
+        const res = await fetch(`${API_BASE}/verify-totp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code })
+        });
+        const j = await res.json().catch(()=>null);
+        return j && j.valid === true;
+      } catch (e) {
+        console.error('verify-totp error', e);
+        throw new Error('Network error while verifying authenticator code.');
+      }
+    }
+
+    async function handleVerify() {
+      hideAlerts();
+      if (!pendingEmail) return showError('No pending login found. Please sign in first.');
+
+      const question = $('question').value || '';
+      const answer = $('answer').value.trim() || '';
+      const totp = $('totp').value.trim() || '';
+
+      if (!question && !totp) return showError('Please answer the security question or enter the authenticator code.');
+
+      // disable button while verifying
+      const btn = $('verifyBtn');
+      btn.disabled = true;
+
+      // If user provided question+answer, try that first (fast)
+      if (question && answer) {
+        try {
+          const ok = await verifySecurityAnswer(pendingEmail, question, answer);
+          if (ok) {
+            showOk('Security answer verified — redirecting...');
+            sessionStorage.removeItem('pendingEmail');
+            setTimeout(()=> window.location.href = 'account-summary.html', 450);
+            return;
+          } else {
+            // if no TOTP provided, fail now
+            if (!totp) {
+              showError('Incorrect question or answer.');
+              btn.disabled = false;
+              return;
+            }
+            // else fall through to TOTP verification
+          }
+        } catch (err) {
+          showError(err.message || 'Error verifying security answer.');
+          btn.disabled = false;
+          return;
+        }
+      }
+
+      // Try TOTP if provided
+      if (totp) {
+        try {
+          const okTotp = await verifyTOTP(pendingEmail, totp);
+          if (okTotp) {
+            showOk('Authenticator code verified — redirecting...');
+            sessionStorage.removeItem('pendingEmail');
+            setTimeout(()=> window.location.href = 'account-summary.html', 350);
+            return;
+          } else {
+            showError('Incorrect authenticator code.');
+            btn.disabled = false;
+            return;
+          }
+        } catch (err) {
+          showError(err.message || 'Error verifying authenticator code.');
+          btn.disabled = false;
+          return;
+        }
+      }
+
+      // fallback
+      showError('Verification failed. Try again.');
+      btn.disabled = false;
+    }
+
+    $('verifyBtn').addEventListener('click', handleVerify);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleVerify(); });
+  </script>
+</body>
+</html>
