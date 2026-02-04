@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)http://zero.webappsecurity.com/bank/transfer-funds.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>Zero - Transfer Funds</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <link rel="shortcut icon" href="../../downloaded_files/img/dollar-ico.png" type="image/png">
+
+    <link type="text/css" rel="stylesheet" href="../../downloaded_files/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="../../downloaded_files/font-awesome.css">
+    <link type="text/css" rel="stylesheet" href="../../downloaded_files/main.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <script src="../../downloaded_files/jquery-1.8.2.min.js"></script>
+    <script src="../../downloaded_files/bootstrap.min.js"></script>
+    <script src="../../downloaded_files/placeholders.min.js"></script>
+
+    <script src="../../js/checkAccess.js"></script>
+    
+    <script type="text/javascript">
+        Placeholders.init({
+            live: true, // Apply to future and modified elements too
+            hideOnFocus: true // Hide the placeholder when the element receives focus
+        });
+    </script>
+    <script type="text/javascript">
+        $(document).ajaxError(function errorHandler(event, xhr, ajaxOptions, thrownError) {
+            if (xhr.status == 403) {
+                window.location.reload();
+            }
+        });
+    </script>
+</head>
+<body contenteditable="false">
+    <div class="wrapper">
+    <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <a href="../../index.html" class="brand">Zero Bank</a>
+
+                <div id="settingsBox">
+                    <ul class="nav float-right">
+                        <li>    <form action="../../search.html" class="navbar-search pull-right" style="padding-right: 20px">
+        <input type="text" id="searchTerm" name="searchTerm" class="search-query" placeholder="Search">
+    </form>
+</li>
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="icon-cog"></i>
+                                Settings
+                                <b class="caret"></b>
+                            </a>
+
+                            <ul class="dropdown-menu">
+                                <li class="disabled"><a>Account Settings</a></li>
+                                <li class="disabled"><a>Privacy Settings</a></li>
+                                <li class="divider"></li>
+                                <li><a id="help_link" href="../../help.html">Help</a></li>
+                            </ul>
+                        </li>
+
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="icon-user"></i>
+username                                <b class="caret"></b>
+                            </a>
+
+                            <ul class="dropdown-menu">
+                                <li class="disabled"><a>My Profile</a></li>
+                                <li class="divider"></li>
+                                <li><a id="logout_link" href="../../logout.html">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <div class="container">
+            <div class="top_offset">
+                    <div class="row">
+    <div class="span12">
+        <div>
+            <ul class="nav nav-tabs">
+                <li id="account_summary_tab"><a href="./account-summary.html">Account Summary</a></li>
+                <li id="account_activity_tab"><a href="./account-activity.html">Account Activity</a></li>
+                <li id="transfer_funds_tab" class="active"><a href="./transfer-funds.html">Transfer Funds</a></li>
+                <li id="pay_bills_tab"><a href="./pay-bills.html">Pay Bills</a></li>
+                <li id="money_map_tab"><a href="./money-map.html">My Money Map</a></li>
+                <li id="online_statements_tab"><a href="./online-statements.html">Online Statements</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function () {
+            var tabURIToId = {
+                "account-summary": "account_summary_tab",
+                "account-activity": "account_activity_tab",
+                "transfer-funds": "transfer_funds_tab",
+                "pay-bills": "pay_bills_tab",
+                "money-map": "money_map_tab",
+                "online-statements": "online_statements_tab"
+            }
+            $.each(tabURIToId, function(tabURI, tabId) {
+                if (document.location.href.indexOf(tabURI) >= 0) {
+                    $("#" + tabId).addClass("active");
+                }
+            });
+        });
+    </script>
+                    </div>
+
+<div id="transfer_funds_content" class="row">
+    <form action="./transfer-funds-verify.html" method="post" class="form-horizontal">
+        <div class="offset2 span8">
+            <div>
+                <h2 class="board-header">Transfer Money &amp; Make Payments</h2>
+
+                <div class="board">
+                    <div class="board-content">
+                        <article>
+                            <fieldset>
+                                <div class="control-group">
+                                    <label class="control-label" for="tf_fromAccountId">From Account</label>
+
+                                    <div class="controls">
+                                        <select id="tf_fromAccountId" name="fromAccountId" class="input-xlarge" required="required">
+                                                <option value="1">
+                                                    Savings(Avail. balance = $ 1000)
+                                                </option>
+                                                <option value="2">
+                                                    Checking(Avail. balance = $ -500.2)
+                                                </option>
+                                                <option value="3">
+                                                    Savings(Avail. balance = $ 1548)
+                                                </option>
+                                                <option value="4">
+                                                    Loan(Avail. balance = $ 780)
+                                                </option>
+                                                <option value="5">
+                                                    Credit Card(Avail. balance = $ -265)
+                                                </option>
+                                                <option value="6">
+                                                    Brokerage(Avail. balance = $ 197)
+                                                </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="control-group">
+                                    <label class="control-label" for="tf_toAccountId">To Account</label>
+
+                                    <div class="controls">
+                                        <select id="tf_toAccountId" name="toAccountId" class="input-xlarge" required="required">
+                                                <option value="1">
+                                                    Savings(Avail. balance = $ 1000)
+                                                </option>
+                                                <option value="2">
+                                                    Checking(Avail. balance = $ -500.2)
+                                                </option>
+                                                <option value="3">
+                                                    Savings(Avail. balance = $ 1548)
+                                                </option>
+                                                <option value="4">
+                                                    Loan(Avail. balance = $ 780)
+                                                </option>
+                                                <option value="5">
+                                                    Credit Card(Avail. balance = $ -265)
+                                                </option>
+                                                <option value="6">
+                                                    Brokerage(Avail. balance = $ 197)
+                                                </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="control-group">
+                                    <label class="control-label" for="tf_amount">Amount</label>
+
+                                    <div class="controls">
+                                        $ <input type="text" id="tf_amount" name="amount" class="input-small" required="required">
+                                    </div>
+                                </div>
+
+                                <div class="control-group">
+                                    <label class="control-label" for="tf_description">Description</label>
+
+                                    <div class="controls">
+                                        <input type="text" id="tf_description" name="description" class="input-xlarge">
+
+                                        <p class="help-block">
+                                            Descriptions appear for checking, savings, money market or
+                                            market rate accounts only.
+                                        </p>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </article>
+                    </div>
+                </div>
+                <div class="pull-right">
+                    <button type="submit" class="btn btn-primary" id="btn_submit">Continue</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+            </div>
+        </div>
+
+        <div class="clearfix push"></div>
+    </div>
+
+<div class="extra">
+    <div class="extra-inner">
+        <div class="container">
+            <div class="row">
+                <div class="span4">
+                    <ul>
+                        <li><span id="download_webinspect_link">Download WebInspect</span></li>
+                    </ul>
+                </div>
+
+                <div class="span4">
+                    <ul>
+                        <li><span id="terms_of_use_link">Terms of Use</span></li>
+                    </ul>
+                </div>
+
+                <div class="span4">
+                    <ul>
+                        <li><span id="contact_hp_link">Contact Micro Focus</span></li>
+                        <li><span id="privacy_statement_link">Privacy Statement</span></li>
+
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="disclaimer span12">
+                    The Free Online Bank Web site is published by Micro Focus Fortify for the sole purpose of demonstrating
+                    the functionality and effectiveness of Micro Focus Fortify’s WebInspect products in detecting and reporting
+                    Web application vulnerabilities. This site is not a real banking site and any similarities to third party products
+                    and/or Web sites are purely coincidental. This site is provided "as is" without warranty of any kind,
+                    either express or implied. Micro Focus Fortify does not assume any risk in relation to your use of this Web site.
+                    Use of this Web site indicates that you have read and agree to Micro Focus Fortify’s Terms of Use found at
+                    <!-- <a href="https://www.microfocus.com/about/legal/#privacy" target="_blank">https://www.microfocus.com/about/legal/#privacy</a> -->
+                    <a href="#" target="_blank">https://www.microfocus.com/about/legal/#privacy</a>
+                    and Micro Focus Fortify’s Online Privacy Statement found at
+                    <!-- <a href="https://www.microfocus.com/about/legal/#privacy" target="_blank">https://www.microfocus.com/about/legal/#privacy</a>. -->
+                    <a href="#" target="_blank">https://www.microfocus.com/about/legal/#privacy</a>.
+
+                    <br><br>
+
+                    Copyright © 2012-2018, Micro Focus Development Company. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        var path = "/";
+
+        var attachClickHandler = function(selector, handler) {
+$(".extra").on('click', selector, handler);
+        }
+
+        var footerLinks = {
+            "download_webinspect_link": { absolute: true, page: "https://software.microfocus.com/en-us/products/webinspect-dynamic-analysis-dast/overview" },
+            "contact_hp_link" : { absolute: true, page: "https://support.fortify.com" },
+            "privacy_statement_link": { absolute: true, page: "https://www.microfocus.com/about/legal/#privacy" },
+            "terms_of_use_link": { absolute: true, page: "https://www.microfocus.com/about/legal/" }
+        };
+
+        $.each(footerLinks, function(linkId, link) {
+            attachClickHandler('span[id="' + linkId + '"]', function(event) {
+                event.preventDefault();
+                if (link.absolute) {
+                    window.location.href = link.page;
+                } else {
+                    window.location.href = path + link.page + ".html";
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
