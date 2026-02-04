@@ -1,4 +1,4 @@
-Multi Layer Authentication System
+## Multi Layer Authentication System
 
 CypherWall is a secure authentication system that uses passwords, security questions, a custom TOTP authenticator app, and a risk-based login system.
 This README explains how to set up, run, and test the entire project.
